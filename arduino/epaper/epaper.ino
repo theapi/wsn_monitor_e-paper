@@ -5,7 +5,7 @@
 #include <GxEPD2_3C.h>
 #include <Fonts/FreeMonoBold9pt7b.h>
 
-#include "TextDisplay.h"
+#include "bitmaps.h"
 
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
@@ -24,6 +24,7 @@ PAYLOAD_sensor_t payload = {};
 
 GxEPD2_BW<GxEPD2_290, GxEPD2_290::HEIGHT> display(GxEPD2_290(/*CS=D8*/ 5, /*DC=D3*/ 0, /*RST=D4*/ 2, /*BUSY=D2*/ 4));
 // Display is 296x128
+
 
 void setup() {
   Serial.begin(115200);
@@ -59,8 +60,9 @@ void setup() {
 
   showConnected(display);
   display.powerOff();
-
-
+  delay(2000);
+  showBitmap();
+  display.powerOff();
 }
 
 void showBoot(GxEPD2_GFX& display) {
@@ -112,6 +114,18 @@ void showPayload(GxEPD2_GFX& display) {
   while (display.nextPage());
 }
 
+void showBitmap() {
+  display.setFullWindow();
+  display.firstPage();
+  do {
+    display.fillScreen(GxEPD_WHITE);
+    display.drawInvertedBitmap(10, 10, Bitmap1, 50, 50, GxEPD_BLACK);
+    display.drawInvertedBitmap(70, 10, water_drop, 20, 30, GxEPD_BLACK);
+    display.drawInvertedBitmap(110, 10, flower, 30, 30, GxEPD_BLACK);
+  }
+  while (display.nextPage());
+}
+
 void loop() {
   static uint8_t msg_id = 0;
   // Check for udp data. 
@@ -126,8 +140,8 @@ void loop() {
     PAYLOAD_unserialize(&payload, (uint8_t*) incomingPacket);
     if (payload.message_id != msg_id) {
       msg_id = payload.message_id;
-      showPayload(display);
-      display.powerOff();
+//      showPayload(display);
+//      display.powerOff();
       Serial.print(payload.message_id); Serial.print(", ");
       Serial.println();
     }
