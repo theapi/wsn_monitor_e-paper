@@ -115,13 +115,31 @@ void showPayload(GxEPD2_GFX& display) {
 }
 
 void showBitmap() {
+  uint8_t x_start = 10;
+  uint8_t y_start = 10;
+  uint8_t x_space = 30;
+  uint8_t y_space = 30;
+  
   display.setFullWindow();
   display.firstPage();
   do {
     display.fillScreen(GxEPD_WHITE);
-    display.drawInvertedBitmap(10, 10, Bitmap1, 50, 50, GxEPD_BLACK);
-    display.drawInvertedBitmap(70, 10, water_drop, 20, 30, GxEPD_BLACK);
-    display.drawInvertedBitmap(110, 10, flower, 30, 30, GxEPD_BLACK);
+
+    for (uint8_t i = 0; i < 4; i++) {
+      uint8_t x = x_start;
+      uint8_t y = y_start + y_space * i;
+      display.drawInvertedBitmap(x, y, level_empty, 25, 25, GxEPD_BLACK);
+      display.drawInvertedBitmap(x + x_space, y, level_quarter, 25, 25, GxEPD_BLACK);
+      display.drawInvertedBitmap(x + x_space * 2, y, level_half, 25, 25, GxEPD_BLACK);
+      display.drawInvertedBitmap(x + x_space * 3, y, level_3quarter, 25, 25, GxEPD_BLACK);
+      display.drawInvertedBitmap(x + x_space * 4, y, level_full, 25, 25, GxEPD_BLACK);
+      display.drawInvertedBitmap(x + x_space * 5, y, level_half, 25, 25, GxEPD_BLACK);
+    }
+    
+//    
+//    display.drawInvertedBitmap(10, 10, Bitmap1, 50, 50, GxEPD_BLACK);
+//    display.drawInvertedBitmap(70, 10, water_drop, 20, 30, GxEPD_BLACK);
+//    display.drawInvertedBitmap(110, 10, flower, 30, 30, GxEPD_BLACK);
   }
   while (display.nextPage());
 }
