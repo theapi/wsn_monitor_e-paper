@@ -119,6 +119,16 @@ void showBitmap() {
   uint8_t y_start = 10;
   uint8_t x_space = 30;
   uint8_t y_space = 30;
+
+  const unsigned char* flowers[] =
+  {
+    flower1, flower2, flower3, flower4
+  };
+
+  const unsigned char* batteries[] =
+  {
+    battery0, battery1, battery2, battery3
+  };
   
   display.setFullWindow();
   display.firstPage();
@@ -128,12 +138,14 @@ void showBitmap() {
     for (uint8_t i = 0; i < 4; i++) {
       uint8_t x = x_start;
       uint8_t y = y_start + y_space * i;
-      display.drawInvertedBitmap(x, y, level_empty, 25, 25, GxEPD_BLACK);
-      display.drawInvertedBitmap(x + x_space, y, level_quarter, 25, 25, GxEPD_BLACK);
-      display.drawInvertedBitmap(x + x_space * 2, y, level_half, 25, 25, GxEPD_BLACK);
-      display.drawInvertedBitmap(x + x_space * 3, y, level_3quarter, 25, 25, GxEPD_BLACK);
-      display.drawInvertedBitmap(x + x_space * 4, y, level_full, 25, 25, GxEPD_BLACK);
-      display.drawInvertedBitmap(x + x_space * 5, y, level_half, 25, 25, GxEPD_BLACK);
+      display.drawInvertedBitmap(x, y, flowers[i], 25, 25, GxEPD_BLACK);
+      display.drawInvertedBitmap(x + x_space, y, batteries[i], 13, 25, GxEPD_BLACK);
+      display.drawInvertedBitmap(x + x_space * 2, y, level_empty, 25, 25, GxEPD_BLACK);
+      display.drawInvertedBitmap(x + x_space * 3, y, level_quarter, 25, 25, GxEPD_BLACK);
+      display.drawInvertedBitmap(x + x_space * 4, y, level_half, 25, 25, GxEPD_BLACK);
+      display.drawInvertedBitmap(x + x_space * 5, y, level_3quarter, 25, 25, GxEPD_BLACK);
+      display.drawInvertedBitmap(x + x_space * 6, y, level_full, 25, 25, GxEPD_BLACK);
+      display.drawInvertedBitmap(x + x_space * 7, y, level_half, 25, 25, GxEPD_BLACK);
     }
     
 //    
