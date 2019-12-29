@@ -12,12 +12,18 @@
 #include "config.h"
 #include "payload.h"
 
+enum State {
+  ST_SETUP,
+  ST_PAYLOAD_RECEIVED,
+};
+State state = ST_SETUP;
+
+
 WiFiUDP Udp;
 // Multicast declarations
 IPAddress ipMulti(239, 0, 0, 58);
 unsigned int portMulti = 12345;      // local port to listen on
 char incomingPacket[255];  // buffer for incoming packets
-
 const byte DEBUG_LED = 16;
 
 PAYLOAD_sensor_t payload = {};
@@ -30,15 +36,7 @@ void setup() {
   Serial.begin(115200);
   Serial.println();
 
-  display.init(115200);
-  display.setRotation(1);
-  display.setFont(&FreeMonoBold9pt7b);
-  display.setTextColor(GxEPD_BLACK);
 
-  // first update should be full refresh
-  //display.clearScreen();
-  showBoot(display);
-  display.powerOff();
 
   WiFi.begin(ssid, password);
   Serial.print("\nConnecting to "); Serial.println(ssid);
@@ -46,7 +44,7 @@ void setup() {
   while (WiFi.status() != WL_CONNECTED && i++ < 20) delay(500);
   if(i == 21){
     Serial.print("Could not connect to"); Serial.println(ssid);
-    delay(5000);
+    delay(1000);
     ESP.restart();
   }
 
@@ -58,11 +56,25 @@ void setup() {
   pinMode(DEBUG_LED, OUTPUT);
   digitalWrite(DEBUG_LED, HIGH);  // LOW = ON
 
-  showConnected(display);
+
+
+  // When using deep sleep everything is reset but keep the screen content until ready to change.
+  display.init(115200);
+  display.setRotation(1);
+  display.setFont(&FreeMonoBold9pt7b);
+  display.setTextColor(GxEPD_BLACK);
   display.powerOff();
-  delay(2000);
-  showBitmap();
-  display.powerOff();
+
+//  // first update should be full refresh
+//  //display.clearScreen();
+//  showBoot(display);
+//  display.powerOff();
+//
+//  showConnected(display);
+//  display.powerOff();
+//  delay(2000);
+//  showBitmap();
+//  display.powerOff();
 }
 
 void showBoot(GxEPD2_GFX& display) {
@@ -170,8 +182,11 @@ void loop() {
     PAYLOAD_unserialize(&payload, (uint8_t*) incomingPacket);
     if (payload.message_id != msg_id) {
       msg_id = payload.message_id;
-//      showPayload(display);
-//      display.powerOff();
+      if (state == ST_SETUP) {
+        state = ST_PAYLOAD_RECEIVED;
+        showBitmap();
+        display.powerOff();
+      }
       Serial.print(payload.message_id); Serial.print(", ");
       Serial.println();
     }
