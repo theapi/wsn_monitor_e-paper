@@ -11,6 +11,7 @@
 #include <WiFiUdp.h>
 #include "config.h"
 #include "payload.h"
+#include "sensor.h"
 
 enum State {
   ST_SETUP,
@@ -26,7 +27,6 @@ unsigned int portMulti = 12345;      // local port to listen on
 char incomingPacket[255];  // buffer for incoming packets
 const byte DEBUG_LED = 16;
 
-PAYLOAD_sensor_t payload = {};
 
 GxEPD2_BW<GxEPD2_290, GxEPD2_290::HEIGHT> display(GxEPD2_290(/*CS=D8*/ 5, /*DC=D3*/ 0, /*RST=D4*/ 2, /*BUSY=D2*/ 4));
 // Display is 296x128
@@ -110,21 +110,21 @@ void showConnected(GxEPD2_GFX& display) {
   while (display.nextPage());
 }
 
-void showPayload(GxEPD2_GFX& display) {
-  char buf[64];
-  uint16_t x = 0;
-  uint16_t y = 120;
-
-  display.setPartialWindow(0, 100, display.width(), 24);
-  sprintf(buf, "Msg %d", payload.message_id);
-  display.firstPage();
-  do {
-    display.fillScreen(GxEPD_WHITE);
-    display.setCursor(x, y);
-    display.print(buf);
-  }
-  while (display.nextPage());
-}
+//void showPayload(GxEPD2_GFX& display) {
+//  char buf[64];
+//  uint16_t x = 0;
+//  uint16_t y = 120;
+//
+//  display.setPartialWindow(0, 100, display.width(), 24);
+//  sprintf(buf, "Msg %d", payload.message_id);
+//  display.firstPage();
+//  do {
+//    display.fillScreen(GxEPD_WHITE);
+//    display.setCursor(x, y);
+//    display.print(buf);
+//  }
+//  while (display.nextPage());
+//}
 
 void showBitmap() {
   uint8_t x_start = 10;
@@ -170,6 +170,8 @@ void showBitmap() {
 
 void loop() {
   static uint8_t msg_id = 0;
+
+  
   // Check for udp data. 
   int packetSize = Udp.parsePacket();
   if (packetSize) {
@@ -179,7 +181,13 @@ void loop() {
     if (len > 0)  {
       incomingPacket[len] = 0;
     }
+
+    PAYLOAD_sensor_t payload = {};
     PAYLOAD_unserialize(&payload, (uint8_t*) incomingPacket);
+    
+    Sensor_t sensor = SensorGet(&payload);
+    Serial.printf("Sensor: num %d, prev: %d, msg_id %d, mac %02X %02X %02X\n", sensor.num, sensor.previous.message_id, sensor.payload.message_id, sensor.payload.mac[0], sensor.payload.mac[1], sensor.payload.mac[2]);
+    
     if (payload.message_id != msg_id) {
       msg_id = payload.message_id;
       if (state == ST_SETUP) {
@@ -187,8 +195,6 @@ void loop() {
         showBitmap();
         display.powerOff();
       }
-      Serial.print(payload.message_id); Serial.print(", ");
-      Serial.println();
     }
     
   }
