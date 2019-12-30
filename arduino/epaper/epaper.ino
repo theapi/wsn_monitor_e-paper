@@ -26,7 +26,7 @@ IPAddress ipMulti(239, 0, 0, 58);
 unsigned int portMulti = 12345;      // local port to listen on
 char incomingPacket[255];  // buffer for incoming packets
 const byte DEBUG_LED = 16;
-
+unsigned long empty_check = 0;
 
 GxEPD2_BW<GxEPD2_290, GxEPD2_290::HEIGHT> display(GxEPD2_290(/*CS=D8*/ 5, /*DC=D3*/ 0, /*RST=D4*/ 2, /*BUSY=D2*/ 4));
 // Display is 296x128
@@ -131,14 +131,8 @@ void loop() {
     // receive incoming UDP packets
     //Serial.printf("Received %d bytes from %s, port %d\n", packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
     int len = Udp.read(incomingPacket, 255);
-    if (len > 0)  {
-      incomingPacket[len] = 0;
-    }
 
-    PAYLOAD_sensor_t payload = {0};
-    PAYLOAD_unserialize(&payload, (uint8_t*) incomingPacket);
-    
-    Sensor_t sensor = SensorGet(&payload);
+    Sensor_t sensor = SensorPopulate((uint8_t*) incomingPacket, len);
     Serial.printf("Sensor: num %d, prev: %d, msg_id %d, last %d\n", 
       sensor.num, sensor.previous.message_id, sensor.payload.message_id, sensor.last);
 
@@ -151,12 +145,22 @@ void loop() {
     }
 
     if (state == ST_PAYLOAD_RECEIVED) {
-      unsigned long now = millis();
-      if (now - sensor.last > (sensor.payload.delay + 2) * 1000) {
-        hideSensor(&sensor);
-        display.powerOff();
-      } else if (sensor.payload.message_id != sensor.previous.message_id) {
+      if (sensor.payload.message_id != sensor.previous.message_id) {
         showSensor(&sensor);
+        display.powerOff();
+      }
+    }
+  }
+
+  unsigned long now = millis();
+  if (now - empty_check >= 2000) {
+    empty_check = now;
+    for (uint8_t i = 0; i < SENSOR_NUM; i++) {
+      Sensor_t sensor = SensorGetByNumber(i);
+      if (sensor.visible == 1 && now - sensor.last > (sensor.payload.delay + 2) * 1000) {
+        //Serial.printf("HIDING: num %d, delay %d, last %d, visible %d\n", sensor.num, sensor.payload.delay, sensor.last, sensor.visible);
+        SensorSetVisible(i, 0);
+        hideSensor(&sensor);
         display.powerOff();
       }
     }

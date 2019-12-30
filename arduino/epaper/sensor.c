@@ -72,9 +72,11 @@ static uint8_t waterLevel(uint16_t val) {
   return 5;
 }
 
-Sensor_t SensorGet(PAYLOAD_sensor_t *payload) {
-  int8_t num = sensorNum(payload);
-  
+Sensor_t SensorPopulate(uint8_t raw[SENSOR_BUFFER_SIZE], uint8_t size) {
+  PAYLOAD_sensor_t payload = {0};
+  PAYLOAD_unserialize(&payload, raw);
+
+  int8_t num = sensorNum(&payload);
   if (num == -1) {
     num = 0; // Override the first one for now.
   }
@@ -82,22 +84,32 @@ Sensor_t SensorGet(PAYLOAD_sensor_t *payload) {
   sensors[num].previous = sensors[num].payload;
   //memcpy ( &sensors[num].previous, &sensors[num].payload, sizeof(PAYLOAD_sensor_t) );
   //memcpy ( &sensors[num].payload, payload, sizeof(PAYLOAD_sensor_t) );
-  sensors[num].payload = *payload;
+  sensors[num].payload = payload;
   sensors[num].num = num;
+  sensors[num].size = size;
+  sensors[num].visible = 1;
   if (sensors[num].payload.message_id != sensors[num].previous.message_id) {
     sensors[num].last = millis();
   }
 
   SensorIcons_t icons = {0};
   icons.flower = num;
-  icons.batt = batteryLevel(payload->batt);
+  icons.batt = batteryLevel(payload.batt);
   
   // The first adc value is the battery, so ignore it.
   for (int i = 1; i < SENSOR_LEVELS + 1; i++) {
-    icons.level[i - 1] = waterLevel(payload->adc[i]);
+    icons.level[i - 1] = waterLevel(payload.adc[i]);
   }
   sensors[num].icons = icons;
 
   return sensors[num];
+}
+
+Sensor_t SensorGetByNumber(uint8_t num) {
+  return sensors[num];
+}
+
+Sensor_t SensorSetVisible(uint8_t num, uint8_t visible) {
+   sensors[num].visible = visible;
 }
 
