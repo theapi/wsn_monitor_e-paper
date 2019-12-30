@@ -36,6 +36,7 @@ void setup() {
   Serial.begin(115200);
   Serial.println();
 
+  WiFi.persistent(false);
   WiFi.begin(ssid, password);
   Serial.print("\nConnecting to "); Serial.println(ssid);
   uint8_t i = 0;
