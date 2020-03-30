@@ -29,6 +29,7 @@ unsigned int portMulti = 12345;      // local port to listen on
 char incomingPacket[255];  // buffer for incoming packets
 const byte DEBUG_LED = 16;
 unsigned long empty_check = 0;
+unsigned long screen_reset = 0;
 
 GxEPD2_BW<GxEPD2_290, GxEPD2_290::HEIGHT> display(GxEPD2_290(/*CS=D8*/ 5, /*DC=D3*/ 0, /*RST=D4*/ 2, /*BUSY=D2*/ 4));
 // Display is 296x128
@@ -91,8 +92,8 @@ void setup() {
 
   Udp.beginMulticast(WiFi.localIP(), ipMulti, portMulti);
   Serial.printf("Now listening to IP %s, UDP port %d\n", ipMulti.toString().c_str(), portMulti);
-  showConnected();
-  display.powerOff();
+  // showConnected();
+  // display.powerOff();
 
   pinMode(DEBUG_LED, OUTPUT);
   digitalWrite(DEBUG_LED, HIGH);  // LOW = ON
@@ -188,6 +189,21 @@ void loop() {
   }
 
   unsigned long now = millis();
+  if (now - screen_reset >= 60000 * 60) {
+    // Ensure the screen does not get burn in.
+    screen_reset = now;
+    display.clearScreen();
+    display.powerOff();
+    // Show the sensors again
+    for (uint8_t i = 0; i < SENSOR_NUM; i++) {
+      Sensor_t sensor = SensorGetByNumber(i);
+      if (sensor.visible == 1) {
+        showSensor(&sensor);
+        display.powerOff();
+      }
+    }
+  }
+
   if (now - empty_check >= 2000) {
     empty_check = now;
     for (uint8_t i = 0; i < SENSOR_NUM; i++) {

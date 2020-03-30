@@ -155,6 +155,12 @@ void showSensor(Sensor_t *sensor) {
     for (int i = 0; i < SENSOR_LEVELS; i++) {
       display.drawInvertedBitmap(x + x_space * (2 + i), y, levels[sensor->icons.level[i]], 25, 25, GxEPD_BLACK);
     }
+
+    char data[100];
+    sprintf(data, "%lu", (sensor->last + millis()) / 1000);
+    Serial.println(data);
+    display.setCursor(x_space * 4, y+20);
+    display.print(data);
   }
   while (display.nextPage());
 }
