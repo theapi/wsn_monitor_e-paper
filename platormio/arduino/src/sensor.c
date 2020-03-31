@@ -57,19 +57,19 @@ static uint8_t waterLevel(uint16_t val) {
     return 0;
   }
   if (val > 1000) {
-    return 5;
+    return 1;
   }
-  if (val > 900) {
-    return 4;
-  }
-  if (val > 800) {
-    return 3;
-  }
-  if (val > 600) {
+  if (val > 950) {
     return 2;
   }
+  if (val > 900) {
+    return 3;
+  }
+  if (val > 850) {
+    return 4;
+  }
 
-  return 1;
+  return 5;
 }
 
 Sensor_t SensorPopulate(uint8_t raw[SENSOR_BUFFER_SIZE], uint8_t size) {
