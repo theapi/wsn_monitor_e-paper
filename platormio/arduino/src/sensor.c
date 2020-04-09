@@ -2,6 +2,7 @@
 //#include <string.h>
 
 #include "sensor.h"
+#include "sensor_config.h"
 
 static Sensor_t sensors[SENSOR_NUM] = {};
 
@@ -113,3 +114,14 @@ void SensorSetVisible(uint8_t num, uint8_t visible) {
    sensors[num].visible = visible;
 }
 
+void SensorInit() {
+  for (int i = 0; i < SENSOR_NUM; i++) {
+    if (sensor_config_sensors[i] && sensor_config_sensors[i][0] > 0) {
+      PAYLOAD_sensor_t payload = {0};
+      for (int x = 0; x < 6; x++) {
+        payload.mac[x] = sensor_config_sensors[i][x];
+      }
+      sensors[i].payload = payload;
+    }
+  }
+}

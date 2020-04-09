@@ -67,6 +67,8 @@ void setup() {
   Serial.begin(115200);
   Serial.println();
 
+  SensorInit();
+
   display.init(115200);
   //display.init(0);
   display.setRotation(1);
