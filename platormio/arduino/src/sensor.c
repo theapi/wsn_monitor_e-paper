@@ -57,16 +57,16 @@ static uint8_t waterLevel(uint16_t val) {
     // No sensor connected.
     return 0;
   }
-  if (val > 1000) {
+  if (val > 900) {
     return 1;
   }
-  if (val > 950) {
+  if (val > 800) {
     return 2;
   }
-  if (val > 900) {
+  if (val > 600) {
     return 3;
   }
-  if (val > 850) {
+  if (val > 500) {
     return 4;
   }
 
