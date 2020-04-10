@@ -63,10 +63,10 @@ static uint8_t waterLevel(uint16_t val) {
   if (val > 800) {
     return 2;
   }
-  if (val > 600) {
+  if (val > 700) {
     return 3;
   }
-  if (val > 500) {
+  if (val > 600) {
     return 4;
   }
 
